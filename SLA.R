@@ -4,5 +4,10 @@ sla <- read.csv("SLA Data.csv")
 print(sla)
 
 library(ggplot2)
-p <- qplot(n_Leaves, Leaf.Area..cm2., data = sla)
-print(p)
+p <- ggplot(data = sla, aes(n_Leaves, Leaf.Area..cm2.))+
+geom_point()
+
+bwp <- p + theme_bw()
+
+print(bwp)
+
