@@ -10,7 +10,7 @@ read_csv("ss-inventory.csv") %>%
   inv
 
 
-# This is REALLY IMPORTANT
+# Ensures you get the same random sampling data set order every time
 set.seed(12345)
 
 # Randomly arrange the inventory data
