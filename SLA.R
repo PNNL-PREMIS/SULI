@@ -6,6 +6,8 @@ print(sla)
 print(summary(sla))
 
 library(ggplot2)
+
+#ggplot properties
 p <- ggplot(data = sla, aes(n_Leaves, Leaf.Area..cm2.))+
 geom_point()
 
