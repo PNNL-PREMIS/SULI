@@ -11,6 +11,7 @@ library(ggplot2)
 p <- ggplot(data = sla, aes(n_Leaves, Leaf.Area..cm2.))+
 geom_point()
 
+#rename ggplot with black and white theme
 bwp <- p + theme_bw()
 
 print(bwp)
