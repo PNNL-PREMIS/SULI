@@ -6,5 +6,5 @@ print(sla)
 print(summary(sla))
 
 library(ggplot2)
-p <- qplot(n_Leaves, Leaf.Area..cm2., data = sla)
+p <- qplot(n_Leaves, Leaf_Area_.cm2., data = sla)
 print(p)
