@@ -1,31 +1,56 @@
 # Script to process Specific Leaf Area data at SERC
 # Created 06-13-2019
+# Call necessary libraries
+library(dplyr)
+library(tidyr)
+library(readr)
+library(ggrepel)
+library(ggplot2)
 
 # Reading in the SLA csv
 sla <- read.csv("SLA Data.csv")
 print(sla)
 print(summary(sla))
 
+# Create new column with specific leaf area
+sla %>%
+  mutate(specific_leaf_area=Leaf_Area_cm2/Leaf_Mass_g) -> sla
 
-# Plot comparing number of leaves to the corresponding leaf area
-library(ggplot2)
+# Read in tree inventory file
+ss_inv <- read_csv('ss-inventory.csv')
 
-p <- qplot(n_Leaves, Leaf_Area_cm2, data = sla)
-print(p)
+# Table of mean and standard devation of live maple trees
+ss_inv %>% 
+  filter(Alive=='Yes',Species=='ACRU') %>% 
+  group_by(Plot,Species) %>% 
+  summarise(mean_DBH=mean(DBH),standard_dev_DBH=sd(DBH)) -> alive_maple
+print(summary(alive_maple))
 
-# Plot comparing number of leaves to corresponding leaf area but pretty!
-leaves_v_area <- ggplot(data = sla, aes(n_Leaves, Leaf_Area_cm2, color = Date)) +
+# Create inventory with just Plot, Species, and Tag columns
+inventory_small <- ss_inv %>% 
+  select(Plot, Species, Tag)
+
+# Remove line where there is no tag number and can't be matched with a species to avoid
+# having a facet wrap with an NA plot
+sla <- sla[!is.na(sla$Tag),]
+
+# Join together SLA data and Species and Plot data, joining by tag
+sla <- left_join(sla, inventory_small)
+
+# Create a box plot of SLA values by species
+sla_box <- ggplot(data=sla, aes(Species, specific_leaf_area,label=Tag,color=Position)) +
+  geom_boxplot() +
   geom_point() +
-  labs(title = "Number of Leaves vs. Leaf Area", subtitle = "Lillie Haddock 6/17/2019", 
-       x = "Number of Leaves Per Sample", y = "Leaf Area (cm2)")
-print(leaves_v_area)
+  geom_text_repel(angle=35,size=3) +
+  labs(y='Specific Leaf Area', title='SLA by Species and Position')
+  
+print(sla_box)
 
-# Plot comparing number of leaves to corresponding leaf area but pretty and separated by date!
-split_by_date <- ggplot(data = sla, aes(n_Leaves, Leaf_Area_cm2, color = Date)) + 
+# Create a plot of SLA by species, with a new plot for each Plot
+sla_plot <- ggplot(data=sla,aes(Species, specific_leaf_area,color=Position)) + 
   geom_point() +
-  labs(title = "Number of Leaves vs. Leaf Area by Date", subtitle = "Lillie Haddock 6/17/2019", 
-       x = "Number of Leaves Per Sample", y = "Leaf Area (cm2)") +
-  facet_wrap(~Date)
-print(split_by_date)
+  facet_wrap(~Plot) +
+  labs(y='Specific Leaf Area', title='SLA by Species and Plot') +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+print(sla_plot)
