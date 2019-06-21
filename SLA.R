@@ -26,9 +26,9 @@ ss_inv %>%
   summarise(mean_DBH=mean(DBH),standard_dev_DBH=sd(DBH)) -> alive_maple
 print(summary(alive_maple))
 
-# Create inventory with just Plot, Species, and Tag columns
+# Create inventory with just Plot, Species, Tag, and DBH columns
 inventory_small <- ss_inv %>% 
-  select(Plot, Species, Tag)
+  select(Plot, Species, Tag, DBH)
 
 # Remove line where there is no tag number and can't be matched with a species to avoid
 # having a facet wrap with an NA plot
@@ -47,7 +47,7 @@ sla_box <- ggplot(data=sla, aes(Species, specific_leaf_area,label=Tag,color=Posi
 print(sla_box)
 
 # Create a plot of SLA by species, with a new plot for each Plot
-sla_plot <- ggplot(data=sla,aes(Species, specific_leaf_area,color=Position)) + 
+sla_plot <- ggplot(data=sla,aes(Species, specific_leaf_area,color=Position,size=DBH)) + 
   geom_point() +
   facet_wrap(~Plot) +
   labs(y='Specific Leaf Area', title='SLA by Species and Plot') +
