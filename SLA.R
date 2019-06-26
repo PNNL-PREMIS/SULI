@@ -1,5 +1,11 @@
 ## Script to process Specific Leaf Area data at SERC
 # Created 06-13-2019
+# Call necessary libraries
+library(dplyr)
+library(tidyr)
+library(readr)
+library(ggrepel)
+library(ggplot2)
 
 # Read in libraries 
 library(ggplot2)
@@ -145,3 +151,5 @@ sla_joined %>%
   ggplot(aes(Species, specific_leaf_area, color = Position)) +
   geom_violin()
 
+
+print(sla_plot)
