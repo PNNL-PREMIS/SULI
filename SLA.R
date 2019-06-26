@@ -17,17 +17,18 @@ print(summary(sla))
 p <- qplot(n_Leaves, Leaf_Area_cm2, data = sla)
 print(p)
 
-# Plot comparing number of leaves to corresponding leaf area but pretty!
+# Plot comparing number of leaves to corresponding leaf area, color by date but pretty!
 leaves_v_area <- ggplot(data = sla, aes(n_Leaves, Leaf_Area_cm2, color = Date)) +
   geom_point() +
-  labs(title = "Number of Leaves vs. Leaf Area", subtitle = "Lillie Haddock 6/17/2019", 
+  geom_jitter()+
+  labs(title = "Number of Leaves vs. Leaf Area", subtitle = paste("Lillie Haddock", date()), 
        x = "Number of Leaves Per Sample", y = "Leaf Area (cm2)")
 print(leaves_v_area)
 
-# Plot comparing number of leaves to corresponding leaf area but pretty and separated by date!
+# Plot comparing number of leaves to corresponding leaf area but pretty, faceted by date!
 split_by_date <- ggplot(data = sla, aes(n_Leaves, Leaf_Area_cm2, color = Date)) + 
   geom_point() +
-  labs(title = "Number of Leaves vs. Leaf Area by Date", subtitle = "Lillie Haddock 6/17/2019", 
+  labs(title = "Number of Leaves vs. Leaf Area by Date", subtitle = paste("Lillie Haddock", date()), 
        x = "Number of Leaves Per Sample", y = "Leaf Area (cm2)") +
   facet_wrap(~Date)
 print(split_by_date)
@@ -52,49 +53,95 @@ ACRU_alive <- inventory %>%
 # Create new dataset with plot, species, and tag columns
 # JOIN!!! sla and inventory_small
 inventory_small <- inventory %>% 
-  select(Plot, Species, Tag) 
+  select(Plot, Species, Tag, DBH) 
 sla_joined <- left_join(sla, inventory_small)
 
 ## SLA by Plot
-sla_plot1 <- sla_joined %>% 
+sla_by_plot <- sla_joined %>% 
   ggplot(aes(Species, specific_leaf_area, color = Position)) +
   geom_point() +
   geom_jitter() +
-  theme_bw() +
   facet_wrap(~Plot) +
   theme(axis.text.x = element_text(angle = 90)) +
   labs(title = "Specific Leaf Area by Plot", y = "Specific Leaf Area", 
-       subtitle = "Lillie Haddock 6/21/19")
-print(sla_plot1)
+       subtitle = paste("Lillie Haddock", date()))
+print(sla_by_plot)
 
-## SLA by species
-sla_plot2 <- sla_joined %>%
+## SLA by species box plot
+sla_with_tag <- sla_joined %>%
   ggplot(aes(Species, specific_leaf_area, label = Tag, color = Position)) +
   geom_boxplot() +
   geom_text_repel() +
   geom_point() + 
-  theme_bw() +
   labs(title = "Specific Leaf Area by Species and Tag Number", y = "Specific Leaf Area")
-print(sla_plot2)
+print(sla_with_tag)
 
 ## SLA by species faceting by plot
-sla_plot3 <- sla_joined %>%
+sla_with_tag_by_plot <- sla_joined %>%
   ggplot(aes(Species, specific_leaf_area, label = Tag, color = Position)) +
   geom_boxplot() +
   geom_text_repel() +
-  geom_point() + 
-  theme_bw() +
+  geom_point() +
   facet_wrap(~Plot) +
   theme(axis.text.x = element_text(angle = 90)) +
   labs(title = "Specific Leaf Area by Species, Plot, and Tag Number", y = "Specific Leaf Area")
-print(sla_plot3)
+print(sla_with_tag_by_plot)
 
-## SLA faceted by species!!!
-sla_plot4 <- sla_joined %>%
+## SLA faceted by species
+sla_by_species <- sla_joined %>%
   ggplot(aes(Plot, specific_leaf_area, color = Position)) +
   geom_point() + 
   geom_jitter() +
-  theme_bw() +
   facet_wrap(~Species) +
+  theme(axis.text.x = element_text(angle = 90)) +
   labs(title = "Specific Leaf Area by Species and Plot", y = "Specific Leaf Area")
-print(sla_plot4)
+print(sla_by_species)
+
+## DBH vs sla colored by species
+sla_vs_dbh <- sla_joined %>% 
+  ggplot(aes(DBH, specific_leaf_area, color = Species)) +
+  geom_point() + 
+  facet_wrap(~Species) +
+  geom_smooth(method = "lm") +
+  labs(title = "Specific Leaf Area vs. DBH", y = "Specific Leaf Area")
+print(sla_vs_dbh)
+
+## leaves vs mass
+leaves_vs_mass <- sla_joined %>% 
+  ggplot(aes(n_Leaves, Leaf_Mass_g, color = Species)) +
+  geom_point() +
+  facet_wrap(~Species) +
+  geom_smooth(method = lm) +
+  labs(title = "Number of Leaves vs. Leaf Dry Mass")
+print(leaves_vs_mass)
+
+## leaves vs area
+leaves_vs_area <- sla_joined %>% 
+  ggplot(aes(n_Leaves, Leaf_Area_cm2, color = Species)) +
+  geom_point() +
+  facet_wrap(~Species) +
+  geom_smooth(method = lm) + 
+  labs(title = "Number of Leaves vs. Leaf Area")
+print(leaves_vs_area)
+
+## sla vs position by species
+sla_vs_position <- sla_joined %>% 
+  ggplot(aes(Position, specific_leaf_area, color = Species)) +
+  geom_point() +
+  geom_jitter() +
+  labs(title = "Specific Leaf Area vs. Canopy Position", x = "Canopy Position", y = "Specific Leaf Area")
+print(sla_vs_position)
+
+## average sla of each species
+sla_averages <- sla_joined %>%
+  group_by(Species) %>%
+  summarise(sla_mean_species = mean(specific_leaf_area))
+sla_averages_plot <- sla_averages %>% 
+  ggplot(aes(Species, sla_mean_species)) +
+  geom_point()
+print(sla_averages_plot)
+
+sla_joined %>% 
+  ggplot(aes(Species, specific_leaf_area, color = Position)) +
+  geom_violin()
+
