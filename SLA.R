@@ -8,8 +8,10 @@ library(readr)
 library(ggrepel)
 library(ggplot2)
 
-## Read in the SLA csv
-sla <- read.csv("SLA Data.csv", stringsAsFactors = FALSE)
+## ================ Read in the SLA csv and make some basic plots
+
+sla <- read.csv("SLA Data.csv", stringsAsFactors = FALSE) %>% 
+  mutate(Tag = as.character(Tag))
 print(sla)
 print(summary(sla))
 
@@ -40,28 +42,37 @@ sla <- sla %>%
   mutate(specific_leaf_area = (Leaf_Area_cm2 / Leaf_Mass_g)) 
 head(sla)
 
+## ================ Join with inventory data
+
 ## Read in the storm surge inventory data
-ss_inventory <- read.csv("ss-inventory.csv", stringsAsFactors = FALSE)
+ss_inventory <- read.csv("ss-inventory.csv", stringsAsFactors = FALSE) %>% 
+  select(Plot, Species_code, Tag, DBH) %>% 
+  mutate(Tag = as.character(Tag))
 summary(ss_inventory)
-# Get rid of points where Tag is NA (look for row "by 1802", and don't include it)
-sla <- sla[!is.na(sla$Tag),]
 
 ## The 'shore' plot at GCREW overlaps with the PREMIS-ghg HSLE plot,
 ## so use that inventory data too
-tr_inventory <- read.csv("transplant_inventory.csv", stringsAsFactors = FALSE)
-
-
-## Table of mean and sd DBH for alive maples 
-ACRU_alive <- ss_inventory %>%
-  filter(Species_code == "ACRU", Alive == "Yes") %>% 
-  group_by(Plot, Species_code) %>% 
-  summarize(mn = mean(DBH), sd = sd(DBH))
+inventory <- read.csv("transplant_inventory.csv", stringsAsFactors = FALSE) %>% 
+  select(Plot, Tag, Species_code, DBH = DBH_cm_2019) %>% 
+  filter(Plot == "HSLE") %>%  # GCREW only
+  mutate(Plot = "Shore") %>% 
+  bind_rows(ss_inventory)
 
 # Create new dataset with plot, species, and tag columns
-# JOIN!!! sla and inventory_small
-inventory_small <- ss_inventory %>% 
-  select(Plot, Species_code, Tag, DBH) 
-sla_joined <- left_join(sla, inventory_small, by = "Tag")
+# by joining with the storm surge inventory data
+sla %>% 
+  left_join(inventory, by = "Tag") %>% 
+  # if NA DBH, then get information from what we measured in field
+  mutate(DBH = if_else(is.na(DBH), No_Tag_DBH, DBH),
+         Species_code = if_else(is.na(Species_code), No_Tag_Species_code, Species_code),
+         Plot = if_else(is.na(Plot), No_Tag_Plot, Plot)) ->
+  sla_joined
+
+# At this point there should be NO data with an NA for Plot or DBH or Species_code
+# Warn if this occurs
+if(any(is.na(sla_joined$DBH))) {
+  warning("We still have unmatched trees!")  
+}
 
 ## SLA by Plot
 sla_by_plot <- sla_joined %>% 
