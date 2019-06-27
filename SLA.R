@@ -1,21 +1,15 @@
 ## Script to process Specific Leaf Area data at SERC
 # Created 06-13-2019
-# Call necessary libraries
-library(dplyr)
-library(tidyr)
-library(readr)
-library(ggrepel)
-library(ggplot2)
 
-# Read in libraries 
-library(ggplot2)
-library(readr)
+# Load necessary packages
 library(dplyr)
 library(tidyr)
+library(readr)
 library(ggrepel)
+library(ggplot2)
 
 ## Read in the SLA csv
-sla <- read.csv("SLA Data.csv")
+sla <- read.csv("SLA Data.csv", stringsAsFactors = FALSE)
 print(sla)
 print(summary(sla))
 
@@ -27,14 +21,16 @@ print(p)
 leaves_v_area <- ggplot(data = sla, aes(n_Leaves, Leaf_Area_cm2, color = Date)) +
   geom_point() +
   geom_jitter()+
-  labs(title = "Number of Leaves vs. Leaf Area", subtitle = paste("Lillie Haddock", date()), 
+  labs(title = "Number of Leaves vs. Leaf Area", 
+       subtitle = paste("Lillie Haddock", date()), 
        x = "Number of Leaves Per Sample", y = "Leaf Area (cm2)")
 print(leaves_v_area)
 
 # Plot comparing number of leaves to corresponding leaf area but pretty, faceted by date!
 split_by_date <- ggplot(data = sla, aes(n_Leaves, Leaf_Area_cm2, color = Date)) + 
   geom_point() +
-  labs(title = "Number of Leaves vs. Leaf Area by Date", subtitle = paste("Lillie Haddock", date()), 
+  labs(title = "Number of Leaves vs. Leaf Area by Date", 
+       subtitle = paste("Lillie Haddock", date()), 
        x = "Number of Leaves Per Sample", y = "Leaf Area (cm2)") +
   facet_wrap(~Date)
 print(split_by_date)
@@ -44,21 +40,21 @@ sla <- sla %>%
   mutate(specific_leaf_area = (Leaf_Area_cm2 / Leaf_Mass_g)) 
 head(sla)
 
-## Read in the inventory data
-inventory <- read.csv("ss-inventory.csv")
-summary(inventory)
+## Read in the storm surge inventory data
+ss_inventory <- read.csv("ss-inventory.csv", stringsAsFactors = FALSE)
+summary(ss_inventory)
 # Get rid of points where Tag is NA (look for row "by 1802", and don't include it)
 sla <- sla[!is.na(sla$Tag),]
 
 ## Table of mean and sd DBH for alive maples 
-ACRU_alive <- inventory %>%
+ACRU_alive <- ss_inventory %>%
   filter(Species == "ACRU", Alive == "Yes") %>% 
   group_by(Plot, Species) %>% 
   summarize(mn = mean(DBH), sd = sd(DBH))
 
 # Create new dataset with plot, species, and tag columns
 # JOIN!!! sla and inventory_small
-inventory_small <- inventory %>% 
+inventory_small <- ss_inventory %>% 
   select(Plot, Species, Tag, DBH) 
 sla_joined <- left_join(sla, inventory_small)
 
@@ -152,4 +148,4 @@ sla_joined %>%
   geom_violin()
 
 
-print(sla_plot)
+cat("All done.")
