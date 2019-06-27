@@ -1,4 +1,4 @@
-Plot,Section,Tag,DBH,Date,Species,Alive,Sapflux,Notes,JS_codes
+Plot,Section,Tag,DBH,Date,Species_code,Alive,Sapflux,Notes,JS_codes
 Control,East,1301,10.7,3/9/19,COFL2,Yes,,,
 Control,East,1302,11.7,3/9/19,ACRU,Yes,,,
 Control,East,1303,18.7,3/9/19,ACRU,Yes,,,
