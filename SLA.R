@@ -65,13 +65,18 @@ sla %>%
   # if NA DBH, then get information from what we measured in field
   mutate(DBH = if_else(is.na(DBH), No_Tag_DBH, DBH),
          Species_code = if_else(is.na(Species_code), No_Tag_Species_code, Species_code),
-         Plot = if_else(is.na(Plot), No_Tag_Plot, Plot)) ->
+         Plot = if_else(is.na(Plot), No_Tag_Plot, Plot)) %>% 
+  # We only want four letter species codes
+  mutate(Species_code = substr(Species_code, 1,4)) ->
   sla_joined
 
 # At this point there should be NO data with an NA for Plot or DBH or Species_code
 # Warn if this occurs
 if(any(is.na(sla_joined$DBH))) {
   warning("We still have unmatched trees!")  
+}
+if(any(sla_joined$Species_code == "")) {
+  warning("We blank species codes!")  
 }
 
 ## SLA by Plot
@@ -145,7 +150,6 @@ print(leaves_vs_area)
 ## sla vs position by species
 sla_vs_position <- sla_joined %>% 
   ggplot(aes(Position, specific_leaf_area, color = Species_code)) +
-  geom_point() +
   geom_jitter() +
   labs(title = "Specific Leaf Area vs. Canopy Position", x = "Canopy Position", y = "Specific Leaf Area")
 print(sla_vs_position)
@@ -161,7 +165,7 @@ print(sla_averages_plot)
 
 sla_joined %>% 
   ggplot(aes(Species_code, specific_leaf_area, color = Position)) +
-  geom_violin()
+  geom_boxplot()
 
 
 cat("All done.")
