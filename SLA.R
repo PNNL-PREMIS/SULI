@@ -39,7 +39,7 @@ print(split_by_date)
 
 ## Create an SLA column
 sla <- sla %>% 
-  mutate(specific_leaf_area = (Leaf_Area_cm2 / Leaf_Mass_g)) 
+  mutate(specific_leaf_area = round(Leaf_Area_cm2 / Leaf_Mass_g, 3)) 
 head(sla)
 
 ## ================ Join with inventory data
@@ -169,3 +169,36 @@ sla_joined %>%
 
 
 cat("All done.")
+
+
+## ------ Try Database Submission -------
+
+species_codes <- read.csv(file = "species_codes.csv", stringsAsFactors = FALSE) 
+plot_lon_lat <- read.csv(file = "plot-lon-lat.csv", stringsAsFactors = FALSE)
+
+try_dataset <- sla_joined %>% 
+  left_join(species_codes, by = "Species_code") %>% 
+  left_join(plot_lon_lat, by = "Plot") %>% 
+  mutate(Exposition = "Natural Forest", 
+           `Forest Age (yrs)` = 60, 
+           `Area per Leaf (cm2)` = round(Leaf_Area_cm2 / n_Leaves, 3),
+           `Mass per Leaf (g)` = round(Leaf_Mass_g / n_Leaves, 3)) %>% 
+  select(`Date Collected` = Date, 
+         Exposition, 
+         `Forest Age (yrs)`,
+         Species,
+         `Species Common` = Species_common, 
+         `Diameter at Breast Height (cm)` = DBH,
+         `Longitude E` = Longitude,
+         `Latitude N` = Latitude,
+         `Leaf Position` = Position, 
+         `N Leaves` = n_Leaves, 
+         `Total Fresh Leaf Area (cm2)` = Leaf_Area_cm2, 
+         `Total Dry Mass (g)` = Leaf_Mass_g, 
+         `Area per Leaf (cm2)`, 
+         `Mass per Leaf (g)`,
+         `Specific Leaf Area (cm2/g)` = specific_leaf_area)
+
+write.csv(try_dataset, "Haddock_SLA_20190628.csv")
+ 
+         
