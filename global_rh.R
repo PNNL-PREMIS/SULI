@@ -13,6 +13,9 @@ rh <- ncvar_get(nc, "co2")
 cellarea <- ncvar_get(nc, "area_cellarea")
 years <- 1901 + ncvar_get(nc, "time")
 
+# Close the file!
+nc_close(nc)
+
 # TODO: print the dimensions and structure of these data
 # TODO: use image() to make a quick plot of the first year's data
 
