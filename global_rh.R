@@ -22,14 +22,15 @@ nc_close(nc)
 # Function that computed the global flux, which is area-weighted sum
 # of all grid cells
 globalflux <- function(gridded_fluxes, cell_areas) {
-  # TODO
+  sum(gridded_fluxes * cell_areas * 1e6, na.rm = TRUE) / 1e15  # return Pg C
 }
 
 # Set up our results data frame
 results <- data.frame(year = years, global_rh = NA_real_)
 
-for(yr in years) {
-  # TODO - call globalflux() above with each 'slice' of rh
+for(i in seq_along(years)) {
+  results$global_rh[i] <- globalflux(gridded_fluxes = rh[,,i], 
+                                     cell_areas = cellarea)
 }
 
 # Plot the results!
