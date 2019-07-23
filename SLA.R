@@ -79,6 +79,29 @@ if(any(sla_joined$Species_code == "")) {
   warning("We blank species codes!")  
 }
 
+
+# ----------- Basic statistics
+
+# We are interested in three things basically: whether SLA varies between
+# species (we would expect yes); whether it varies between "low" and "high" 
+# canopy positions (we would expect yes, but tricky because most of the sampled
+# trees as subcanopy and not in full sunlight); and whether it varies between
+# the "Shore" plot versus all the upland plots.
+
+cat("Overall species effect:\n")
+m_species <- lm(specific_leaf_area ~ Species_code, data = sla_joined)
+print(car::Anova(m_species, type = "III"))
+
+cat("Pairwise t-test comparison between species (adjusting for multiple comparisons):\n")
+pairwise.t.test(sla_joined$specific_leaf_area, sla_joined$Species_code, p.adj = "bonferroni")
+
+cat("Combined effects of species, position, and shore versus upland:\n")
+sla_joined$Shoreplot <- sla_joined$Plot == "Shore"
+m_overall <- lm(specific_leaf_area ~ Species_code + Position + Shoreplot, data = sla_joined)
+print(summary(m_overall))
+print(car::Anova(m_overall, type = "III"))
+
+
 ## SLA by Plot
 sla_by_plot <- sla_joined %>% 
   ggplot(aes(Species_code, specific_leaf_area, color = Position)) +
