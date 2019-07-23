@@ -93,7 +93,7 @@ m_species <- lm(specific_leaf_area ~ Species_code, data = sla_joined)
 print(car::Anova(m_species, type = "III"))
 
 cat("Pairwise t-test comparison between species (adjusting for multiple comparisons):\n")
-pairwise.t.test(sla_joined$specific_leaf_area, sla_joined$Species_code, p.adj = "bonferroni")
+print(pairwise.t.test(sla_joined$specific_leaf_area, sla_joined$Species_code, p.adj = "bonferroni"))
 
 cat("Combined effects of species, position, and shore versus upland:\n")
 sla_joined$Shoreplot <- sla_joined$Plot == "Shore"
