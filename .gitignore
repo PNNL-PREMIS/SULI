@@ -8,3 +8,6 @@
 
 # Ignore saved plot files
 *.png
+
+# Ignore netcdf files
+*.nc
