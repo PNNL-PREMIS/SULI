@@ -160,7 +160,8 @@ sla_averages <- sla_joined %>%
   summarise(sla_mean_species = mean(specific_leaf_area))
 sla_averages_plot <- sla_averages %>% 
   ggplot(aes(Species_code, sla_mean_species)) +
-  geom_point()
+  geom_histogram() +
+  theme_bw() +
 print(sla_averages_plot)
 
 sla_joined %>% 
